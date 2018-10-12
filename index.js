@@ -35,6 +35,7 @@ app.use(
     skip: (req, res) => process.env.NODE_ENV === 'test'
   })
 );
+app.use(express.json());
 
 app.use(
   cors({
