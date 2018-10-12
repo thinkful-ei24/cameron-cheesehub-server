@@ -3,9 +3,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 
 const { PORT, CLIENT_ORIGIN } = require('./config');
 const { dbConnect } = require('./db-mongoose');
+const Cheese = require('./models/cheese');
 // const {dbConnect} = require('./db-knex');
 
 const app = express();
@@ -44,12 +46,38 @@ app.use(
 );
 
 app.get('/api/cheeses', (req, res, next) => {
-  res.json(cheeseList);
+  Cheese.find()
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 app.post('/api/cheeses', (req, res, next) => {
-  cheeseList.push(req.body.cheese);
-  res.sendStatus(202);
+  const {cheese} = req.body;
+  Cheese.create({cheese})
+    .then(res.sendStatus(201))
+    .catch(err => next(err));
+});
+
+// Custom 404 Not Found route handler
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// Custom Error Handler
+app.use((err, req, res, next) => {
+  if (err.status) {
+    const errBody = Object.assign({}, err, { message: err.message });
+    res.status(err.status).json(errBody);
+  } else {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
 function runServer(port = PORT) {
