@@ -46,6 +46,11 @@ app.get('/api/cheeses', (req, res, next) => {
   res.json(cheeseList);
 });
 
+app.post('/api/cheeses', (req, res, next) => {
+  cheeseList.push(req.body.cheese);
+  res.sendStatus(202);
+});
+
 function runServer(port = PORT) {
   const server = app
     .listen(port, () => {
